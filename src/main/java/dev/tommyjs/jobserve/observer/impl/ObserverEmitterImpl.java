@@ -8,8 +8,10 @@ import dev.tommyjs.jobserve.observer.key.ObserverKey;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.security.SecureRandom;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
@@ -19,15 +21,16 @@ import java.util.function.Consumer;
 
 public class ObserverEmitterImpl implements ObserverEmitter {
 
+    private final Random random;
     private final @NotNull Map<ObserverKey, AtomicReference<Set<ObserverSubscription>>> observers;
 
     public ObserverEmitterImpl() {
+        this.random = new SecureRandom();
         this.observers = new ConcurrentHashMap<>();
     }
 
     protected @NotNull ObserverSubscription observe0(@NotNull ObserverKey key, @NotNull Consumer<Object> consumer) {
-        int id = ThreadLocalRandom.current().nextInt();
-        ObserverSubscription subscription = new ObserverSubscriptionImpl(this, id, key, consumer);
+        ObserverSubscription subscription = new ObserverSubscriptionImpl(this, random.nextInt(), key, consumer);
 
         observers.compute(key, (_k, ref) -> {
             if (ref == null) {
