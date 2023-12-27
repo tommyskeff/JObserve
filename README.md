@@ -18,7 +18,7 @@ It is **worth noting** that observing an object **does not** prevent the object 
 
 ### Dependency
 
-We are currently on version `0.1.1`.
+We are currently on version `0.1.2`.
 
 ```xml
 <repositories>
@@ -32,7 +32,7 @@ We are currently on version `0.1.1`.
     <dependency>
         <groupId>dev.tommyjs</groupId>
         <artifactId>JObserve</artifactId>
-        <version>0.1.1</version>
+        <version>0.1.2</version>
         <scope>compile</scope>
     </dependency>
 </dependencies>

@@ -1,5 +1,8 @@
 package dev.tommyjs.jobserve.observer;
 
+import dev.tommyjs.jobserve.attribute.AttributeKey;
+import dev.tommyjs.jobserve.attribute.AttributeObservable;
+import dev.tommyjs.jobserve.attribute.AttributeRegistry;
 import dev.tommyjs.jobserve.observer.key.DuplexKey;
 import dev.tommyjs.jobserve.observer.key.MonoKey;
 import org.jetbrains.annotations.NotNull;
@@ -29,6 +32,12 @@ public class ObserverList {
 
     public <K, V> @NotNull ObserverSubscription observe(@NotNull Observable object, @NotNull DuplexKey<K, V> key, @NotNull BiConsumer<K, V> consumer) {
         ObserverSubscription sub = object.observe(key, consumer);
+        add(sub);
+        return sub;
+    }
+
+    public @NotNull <T> ObserverSubscription observeAttribute(@NotNull AttributeObservable object, @NotNull AttributeKey<T> key, @NotNull Consumer<T> consumer) {
+        ObserverSubscription sub = object.observeAttribute(key, consumer);
         add(sub);
         return sub;
     }
