@@ -12,6 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -84,31 +85,60 @@ public class AttributeRegistryImpl implements AttributeRegistry, Observable {
     public <T> @Nullable T getAttributeOrSetDefault(@NotNull AttributeKey<T> key, @Nullable T defaultValue) {
         checkArgType(key, defaultValue);
         AtomicReference<Object> ref = getReference(key);
-        return (T) ref.getAndUpdate(o -> {
+
+        AtomicReference<T> finalVal = new AtomicReference<>();
+        AtomicBoolean changed = new AtomicBoolean();
+
+        ref.getAndUpdate(o -> {
             checkValueType(key, o);
             if (o == null) {
-                emit(AttributeRegistry.UPDATE_ATTRIBUTE_OBSERVER, key, defaultValue);
+                changed.set(true);
+                finalVal.set(defaultValue);
                 return defaultValue;
             } else {
+                finalVal.set((T) o);
                 return o;
             }
         });
+
+        if (changed.get()) {
+            emit(AttributeRegistry.UPDATE_ATTRIBUTE_OBSERVER, key, defaultValue);
+        }
+
+        return finalVal.get();
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public <T> @Nullable T getAttributeOrSetDefault(@NotNull AttributeKey<T> key, @NotNull Supplier<T> supplier) {
         AtomicReference<Object> ref = getReference(key);
-        return (T) ref.getAndUpdate(o -> {
+
+        AtomicReference<T> finalVal = new AtomicReference<>();
+        AtomicBoolean changed = new AtomicBoolean();
+
+        ref.getAndUpdate(o -> {
             checkValueType(key, o);
             if (o == null) {
-                o = supplier.get();
-                checkArgType(key, (T) o);
-                emit(AttributeRegistry.UPDATE_ATTRIBUTE_OBSERVER, key, o);
+                if (finalVal.get() == null) {
+                    T res = supplier.get();
+                    checkArgType(key, res);
+
+                    finalVal.set(res);
+                    changed.set(true);
+
+                    o = res;
+                } else {
+                    o = finalVal.get();
+                }
             }
 
             return o;
         });
+
+        if (changed.get()) {
+            emit(AttributeRegistry.UPDATE_ATTRIBUTE_OBSERVER, key, finalVal.get());
+        }
+
+        return finalVal.get();
     }
 
     @SuppressWarnings("unchecked")
@@ -122,9 +152,10 @@ public class AttributeRegistryImpl implements AttributeRegistry, Observable {
             T result = function.apply((T) value);
             checkArgType(key, result);
             res.set(result);
-            emit(AttributeRegistry.UPDATE_ATTRIBUTE_OBSERVER, key, result);
             return result;
         });
+
+        emit(AttributeRegistry.UPDATE_ATTRIBUTE_OBSERVER, key, res.get());
 
         return res.get();
     }
