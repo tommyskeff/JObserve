@@ -42,10 +42,6 @@ public interface AttributeHolder extends Observable, AttributeObservable {
         return getAttributes().getAttributeOrSetDefault(key, defaultValue);
     }
 
-    default <T> @Nullable T getAttributeOrSetDefault(@NotNull AttributeKey<T> key, @NotNull Supplier<T> supplier) {
-        return getAttributes().getAttributeOrSetDefault(key, supplier);
-    }
-
     default <T> T getAttributeAndUpdate(@NotNull AttributeKey<T> key, @NotNull Function<@Nullable T, @Nullable T> function) {
         return getAttributes().getAndUpdate(key, function);
     }

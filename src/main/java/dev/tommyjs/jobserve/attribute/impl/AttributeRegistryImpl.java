@@ -63,14 +63,6 @@ public class AttributeRegistryImpl implements AttributeRegistry, Observable {
         return value == null ? defaultValue : ((T) value);
     }
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public <T> @NotNull T getAttributeOrCreateDefault(@NotNull AttributeKey<T> key, @NotNull Supplier<@NotNull T> supplier) {
-        Object value = getReference(key).get();
-        checkValueType(key, value);
-        return value == null ? supplier.get() : ((T) value);
-    }
-
     @Override
     public <T> void setAttribute(@NotNull AttributeKey<T> key, @Nullable T value) {
         checkArgType(key, value);
@@ -109,7 +101,7 @@ public class AttributeRegistryImpl implements AttributeRegistry, Observable {
     }
 
     @Override
-    public <T> @Nullable T getAttributeOrSetDefault(@NotNull AttributeKey<T> key, @NotNull Supplier<T> supplier) {
+    public <T> @NotNull @Nullable T getAttributeOrCreateDefault(@NotNull AttributeKey<T> key, @NotNull Supplier<T> supplier) {
         AtomicReference<Object> ref = getReference(key);
 
         AtomicReference<T> finalVal = new AtomicReference<>();
