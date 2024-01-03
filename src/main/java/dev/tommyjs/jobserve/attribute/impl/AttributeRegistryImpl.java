@@ -100,8 +100,9 @@ public class AttributeRegistryImpl implements AttributeRegistry, Observable {
         return finalVal.get();
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public <T> @NotNull @Nullable T getAttributeOrCreateDefault(@NotNull AttributeKey<T> key, @NotNull Supplier<T> supplier) {
+    public <T> @NotNull T getAttributeOrCreateDefault(@NotNull AttributeKey<T> key, @NotNull Supplier<T> supplier) {
         AtomicReference<Object> ref = getReference(key);
 
         AtomicReference<T> finalVal = new AtomicReference<>();
@@ -121,6 +122,8 @@ public class AttributeRegistryImpl implements AttributeRegistry, Observable {
                 } else {
                     o = finalVal.get();
                 }
+            } else {
+                finalVal.set((T) o);
             }
 
             return o;
