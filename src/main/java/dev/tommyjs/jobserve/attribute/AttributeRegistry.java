@@ -24,8 +24,6 @@ public interface AttributeRegistry extends Observable {
 
     <T> @Nullable T getAttributeOrSetDefault(@NotNull AttributeKey<T> key, @Nullable T defaultValue);
 
-    <T> @Nullable T getAttributeOrSetDefault(@NotNull AttributeKey<T> key, @NotNull Supplier<T> supplier);
-
     <T> T getAndUpdate(@NotNull AttributeKey<T> key, @NotNull Function<@Nullable T, @Nullable T> function);
 
     <T> Optional<T> getAsOptional(@NotNull AttributeKey<T> key);
