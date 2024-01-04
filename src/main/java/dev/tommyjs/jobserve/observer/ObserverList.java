@@ -2,7 +2,6 @@ package dev.tommyjs.jobserve.observer;
 
 import dev.tommyjs.jobserve.attribute.AttributeKey;
 import dev.tommyjs.jobserve.attribute.AttributeObservable;
-import dev.tommyjs.jobserve.attribute.AttributeRegistry;
 import dev.tommyjs.jobserve.observer.key.DuplexKey;
 import dev.tommyjs.jobserve.observer.key.MonoKey;
 import org.jetbrains.annotations.NotNull;
