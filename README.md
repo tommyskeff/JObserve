@@ -14,11 +14,11 @@ The concepts of `Observable` and `AttributeHolder` are considered seperate, howe
 
 Subscriptions can be cancelled at any time with `subscription.cancel()`, and you are given the subscription object after observing an object.
 
-It is **worth noting** that observing an object **does not** prevent the object from being garbage collected, however it **does** prevent the callback context from being garbage collected for the lifespan of the observed object.
+It is **worth noting** that observing an object with a **does not** prevent the object from being garbage collected, however it **does** prevent the callback context from being garbage collected for the lifespan of the observed object, if subscribed with a **strong reference**. Read the JavaDoc in Observable for more information.
 
 ### Dependency
 
-We are currently on version `0.2.0`.
+We are currently on version `0.3.0`.
 
 ```xml
 <repositories>
@@ -32,7 +32,7 @@ We are currently on version `0.2.0`.
     <dependency>
         <groupId>dev.tommyjs</groupId>
         <artifactId>JObserve</artifactId>
-        <version>0.2.0</version>
+        <version>0.3.0</version>
         <scope>compile</scope>
     </dependency>
 </dependencies>
@@ -52,7 +52,7 @@ person.observeAttribute(balanceAttribute, newBalance -> {
 });
 
 person.setAttribute(balanceAttribute, 1500);
-person.getAndUpdateAttribute(balanceAttribute, balance -> balance == null ? 0 : balance + 50);
+person.getAttributeAndUpdate(balanceAttribute, balance -> balance == null ? 0 : balance + 50);
 
 /*  OUTPUT
     The balance of John Smith has changed to 1500

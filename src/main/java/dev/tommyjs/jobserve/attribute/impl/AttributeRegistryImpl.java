@@ -16,6 +16,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+@SuppressWarnings("unchecked")
 public class AttributeRegistryImpl implements AttributeRegistry, Observable {
 
     private final ObserverEmitter emitter;
@@ -42,7 +43,6 @@ public class AttributeRegistryImpl implements AttributeRegistry, Observable {
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public <T> @Nullable T getAttribute(@NotNull AttributeKey<T> key) {
         mutex.readLock().lock();
@@ -55,12 +55,12 @@ public class AttributeRegistryImpl implements AttributeRegistry, Observable {
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public <T> @Nullable T getAttributeOrDefault(@NotNull AttributeKey<T> key, @Nullable T defaultValue) {
+    public <T> @NotNull @Nullable T getAttributeOrDefault(@NotNull AttributeKey<T> key, @Nullable T defaultValue) {
+        checkArgType(key, defaultValue);
+
         mutex.readLock().lock();
         try {
-            checkArgType(key, defaultValue);
             Object value = data.get(key);
             checkValueType(key, value);
             return value == null ? defaultValue : ((T) value);
@@ -71,28 +71,38 @@ public class AttributeRegistryImpl implements AttributeRegistry, Observable {
 
     @Override
     public <T> void setAttribute(@NotNull AttributeKey<T> key, @Nullable T value) {
+        checkArgType(key, value);
+
         mutex.writeLock().lock();
         try {
-            checkArgType(key, value);
-            data.put(key, value);
+            if (value == null) {
+                data.remove(key);
+            } else {
+                data.put(key, value);
+            }
+
             emit(AttributeRegistry.UPDATE_ATTRIBUTE_OBSERVER, key, value);
         } finally {
             mutex.writeLock().unlock();
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public <T> @Nullable T getAttributeOrSetDefault(@NotNull AttributeKey<T> key, @Nullable T defaultValue) {
+    public <T> @NotNull @Nullable T getAttributeOrSetDefault(@NotNull AttributeKey<T> key, @Nullable T defaultValue) {
+        checkArgType(key, defaultValue);
+
         mutex.writeLock().lock();
         try {
-            checkArgType(key, defaultValue);
-
             Object value = data.get(key);
             checkValueType(key, value);
 
             if (value == null) {
-                data.put(key, defaultValue);
+                if (defaultValue == null) {
+                    data.remove(key);
+                } else {
+                    data.put(key, defaultValue);
+                }
+
                 emit(AttributeRegistry.UPDATE_ATTRIBUTE_OBSERVER, key, defaultValue);
                 return defaultValue;
             } else {
@@ -103,7 +113,6 @@ public class AttributeRegistryImpl implements AttributeRegistry, Observable {
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public <T> @NotNull T getAttributeOrCreateDefault(@NotNull AttributeKey<T> key, @NotNull Supplier<T> supplier) {
         mutex.writeLock().lock();
@@ -113,8 +122,14 @@ public class AttributeRegistryImpl implements AttributeRegistry, Observable {
 
             if (value == null) {
                 T defaultValue = supplier.get();
-                checkArgType(key, defaultValue);
-                data.put(key, defaultValue);
+
+                if (defaultValue == null) {
+                    throw new IllegalArgumentException("Default value must not be null");
+                } else {
+                    checkArgType(key, defaultValue);
+                    data.put(key, defaultValue);
+                }
+
                 emit(AttributeRegistry.UPDATE_ATTRIBUTE_OBSERVER, key, defaultValue);
                 return defaultValue;
             } else {
@@ -125,7 +140,6 @@ public class AttributeRegistryImpl implements AttributeRegistry, Observable {
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public <T> T getAndUpdate(@NotNull AttributeKey<T> key, @NotNull Function<@Nullable T, @Nullable T> function) {
         mutex.writeLock().lock();
@@ -134,9 +148,34 @@ public class AttributeRegistryImpl implements AttributeRegistry, Observable {
             checkValueType(key, value);
 
             T finalValue = function.apply((T) value);
-            emit(AttributeRegistry.UPDATE_ATTRIBUTE_OBSERVER, key, finalValue);
-            data.put(key, finalValue);
+            if (finalValue == null) {
+                data.remove(key);
+            } else {
+                data.put(key, finalValue);
+            }
 
+            emit(AttributeRegistry.UPDATE_ATTRIBUTE_OBSERVER, key, finalValue);
+            return (T) value;
+        } finally {
+            mutex.writeLock().unlock();
+        }
+    }
+
+    @Override
+    public <T> T updateAndGet(@NotNull AttributeKey<T> key, @NotNull Function<@Nullable T, @Nullable T> function) {
+        mutex.writeLock().lock();
+        try {
+            Object value = data.get(key);
+            checkValueType(key, value);
+
+            T finalValue = function.apply((T) value);
+            if (finalValue == null) {
+                data.remove(key);
+            } else {
+                data.put(key, finalValue);
+            }
+
+            emit(AttributeRegistry.UPDATE_ATTRIBUTE_OBSERVER, key, finalValue);
             return finalValue;
         } finally {
             mutex.writeLock().unlock();
@@ -144,7 +183,7 @@ public class AttributeRegistryImpl implements AttributeRegistry, Observable {
     }
 
     @Override
-    public <T> Optional<T> getAsOptional(@NotNull AttributeKey<T> key) {
+    public <T> @NotNull Optional<T> getAsOptional(@NotNull AttributeKey<T> key) {
         return Optional.ofNullable(getAttribute(key));
     }
 

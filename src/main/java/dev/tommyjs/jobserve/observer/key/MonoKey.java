@@ -2,6 +2,9 @@ package dev.tommyjs.jobserve.observer.key;
 
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * Observer key with a single argument.
+ */
 @SuppressWarnings("unused")
 public final class MonoKey<T> extends ObserverKey {
 

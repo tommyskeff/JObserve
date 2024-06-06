@@ -2,6 +2,9 @@ package dev.tommyjs.jobserve.observer.key;
 
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * Observer key with two arguments.
+ */
 @SuppressWarnings("unused")
 public final class DuplexKey<K, V> extends ObserverKey {
 

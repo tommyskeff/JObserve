@@ -5,7 +5,6 @@ import java.util.Random;
 
 public class AttributeKey<T> {
 
-    private static final Object LOCK = new Object();
     private static final Random RANDOM = new SecureRandom();
 
     private final int id;
@@ -33,9 +32,7 @@ public class AttributeKey<T> {
     }
 
     public static <T> AttributeKey<T> register(Class<T> clazz) {
-        synchronized (LOCK) {
-            return new AttributeKey<>(RANDOM.nextInt(), clazz);
-        }
+        return new AttributeKey<>(RANDOM.nextInt(), clazz);
     }
 
 }

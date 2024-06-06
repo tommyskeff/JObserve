@@ -8,7 +8,7 @@ import java.util.Random;
 
 public class ObserverKey {
 
-    protected static @NotNull Random RANDOM = new SecureRandom();
+    protected static final @NotNull Random RANDOM = new SecureRandom();
 
     private final int keyId;
 
