@@ -1,11 +1,10 @@
 package dev.tommyjs.jobserve.attribute;
 
-import java.security.SecureRandom;
-import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class AttributeKey<T> {
 
-    private static final Random RANDOM = new SecureRandom();
+    private static final AtomicInteger INDEX = new AtomicInteger();
 
     private final int id;
     private final Class<?> clazz;
@@ -32,7 +31,7 @@ public class AttributeKey<T> {
     }
 
     public static <T> AttributeKey<T> register(Class<T> clazz) {
-        return new AttributeKey<>(RANDOM.nextInt(), clazz);
+        return new AttributeKey<>(INDEX.getAndIncrement(), clazz);
     }
 
 }

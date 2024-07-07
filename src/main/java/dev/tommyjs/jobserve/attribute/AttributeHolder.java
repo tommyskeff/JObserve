@@ -30,22 +30,23 @@ public interface AttributeHolder extends Observable, AttributeObservable {
     }
 
     /**
-     * Checks whether a given attribute is stored in this attribute holder. It is worth noting
-     * that a null value is treated as the value not being stored.
-     * @param key attribute key
-     * @return whether a value is stored
-     */
-    default boolean hasAttribute(@NotNull AttributeKey<?> key) {
-        return getAttribute(key) != null;
-    }
-
-    /**
      * Retrieves an attribute from a given attribute key.
      * @param key attribute key
      * @return current attribute value, or null if not stored
      */
     default <T> @Nullable T getAttribute(@NotNull AttributeKey<T> key) {
         return getAttributes().getAttribute(key);
+    }
+
+    /**
+     * Retrieves an attribute from a given attribute key. Will throw if the attribute is not
+     * present.
+     * @param key attribute key
+     * @return current attribute value
+     * @throws IllegalStateException if the attribute is not present
+     */
+    default <T> @NotNull T getAttributeOrThrow(@NotNull AttributeKey<T> key) {
+        return getAttributes().getAttributeOrThrow(key);
     }
 
     /**
@@ -73,6 +74,16 @@ public interface AttributeHolder extends Observable, AttributeObservable {
     }
 
     /**
+     * Checks whether a given attribute is stored in this attribute holder. It is worth noting
+     * that a {@code null} value is treated as the value not being stored.
+     * @param key attribute key
+     * @return whether a value is stored
+     */
+    default boolean hasAttribute(@NotNull AttributeKey<?> key) {
+        return getAttributes().hasAttribute(key);
+    }
+
+    /**
      * Sets an attribute with a given attribute key to a given value. If the given value is
      * null, the value will no longer be stored.
      * @param key attribute key
@@ -80,6 +91,15 @@ public interface AttributeHolder extends Observable, AttributeObservable {
      */
     default <T> void setAttribute(@NotNull AttributeKey<T> key, @Nullable T value) {
         getAttributes().setAttribute(key, value);
+    }
+
+    /**
+     * Clears an attribute with a given attribute key. This action is equivalent to calling
+     * {@link #setAttribute(AttributeKey, Object)} with {@code null}.
+     * @param key attribute key
+     */
+    default <T> void clearAttribute(@NotNull AttributeKey<T> key) {
+        setAttribute(key, null);
     }
 
     /**

@@ -55,11 +55,21 @@ public class AttributeTest {
     }
 
     @Test
-    public void ClearTest() {
+    public void ManualClearTest() {
         AttributeKey<Integer> integerAttribute = AttributeKey.register(Integer.class);
         AttributeHolder holder = new DummyAttributeHolder();
         holder.setAttribute(integerAttribute, 100);
         holder.setAttribute(integerAttribute, null);
+
+        assert !holder.hasAttribute(integerAttribute);
+    }
+
+    @Test
+    public void ClearTest() {
+        AttributeKey<Integer> integerAttribute = AttributeKey.register(Integer.class);
+        AttributeHolder holder = new DummyAttributeHolder();
+        holder.setAttribute(integerAttribute, 100);
+        holder.clearAttribute(integerAttribute);
 
         assert !holder.hasAttribute(integerAttribute);
     }
@@ -136,6 +146,60 @@ public class AttributeTest {
             return 50;
         });
         assert Objects.equals(result, 50);
+    }
+
+    @Test
+    public void ThrowPresentTest() {
+        AttributeKey<Integer> integerAttribute = AttributeKey.register(Integer.class);
+        AttributeHolder holder = new DummyAttributeHolder();
+
+        holder.setAttribute(integerAttribute, 100);
+
+        boolean thrown = false;
+
+        int result = 0;
+        try {
+            result = holder.getAttributeOrThrow(integerAttribute);
+        } catch (IllegalStateException e) {
+            thrown = true;
+        }
+
+        assert !thrown && Objects.equals(result, 100);
+    }
+
+    @Test
+    public void ThrowNotPresentTest() {
+        AttributeKey<Integer> integerAttribute = AttributeKey.register(Integer.class);
+        AttributeHolder holder = new DummyAttributeHolder();
+
+        boolean thrown = false;
+
+        try {
+            holder.getAttributeOrThrow(integerAttribute);
+        } catch (IllegalStateException e) {
+            thrown = true;
+        }
+
+        assert thrown;
+    }
+
+    @Test
+    public void ThrowClearTest() {
+        AttributeKey<Integer> integerAttribute = AttributeKey.register(Integer.class);
+        AttributeHolder holder = new DummyAttributeHolder();
+
+        holder.setAttribute(integerAttribute, 100);
+        holder.clearAttribute(integerAttribute);
+
+        boolean thrown = false;
+
+        try {
+            holder.getAttributeOrThrow(integerAttribute);
+        } catch (IllegalStateException e) {
+            thrown = true;
+        }
+
+        assert thrown;
     }
 
 

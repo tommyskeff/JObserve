@@ -20,7 +20,7 @@ public final class MonoKey<T> extends ObserverKey {
     }
 
     public static <T> @NotNull MonoKey<T> register(@NotNull Class<T> type) {
-        return new MonoKey<>(RANDOM.nextInt(), type);
+        return new MonoKey<>(INDEX.getAndIncrement(), type);
     }
 
 }

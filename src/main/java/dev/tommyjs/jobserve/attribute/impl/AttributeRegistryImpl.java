@@ -56,7 +56,23 @@ public class AttributeRegistryImpl implements AttributeRegistry, Observable {
     }
 
     @Override
-    public <T> @NotNull @Nullable T getAttributeOrDefault(@NotNull AttributeKey<T> key, @Nullable T defaultValue) {
+    public <T> @NotNull T getAttributeOrThrow(@NotNull AttributeKey<T> key) {
+        mutex.readLock().lock();
+        try {
+            Object value = data.get(key);
+            if (value == null) {
+                throw new IllegalStateException("Attribute not present");
+            } else {
+                checkValueType(key, value);
+                return (T) value;
+            }
+        } finally {
+            mutex.readLock().unlock();
+        }
+    }
+
+    @Override
+    public <T> @NotNull T getAttributeOrDefault(@NotNull AttributeKey<T> key, @NotNull T defaultValue) {
         checkArgType(key, defaultValue);
 
         mutex.readLock().lock();
@@ -88,7 +104,7 @@ public class AttributeRegistryImpl implements AttributeRegistry, Observable {
     }
 
     @Override
-    public <T> @NotNull @Nullable T getAttributeOrSetDefault(@NotNull AttributeKey<T> key, @Nullable T defaultValue) {
+    public <T> @NotNull T getAttributeOrSetDefault(@NotNull AttributeKey<T> key, @NotNull T defaultValue) {
         checkArgType(key, defaultValue);
 
         mutex.writeLock().lock();
@@ -97,12 +113,7 @@ public class AttributeRegistryImpl implements AttributeRegistry, Observable {
             checkValueType(key, value);
 
             if (value == null) {
-                if (defaultValue == null) {
-                    data.remove(key);
-                } else {
-                    data.put(key, defaultValue);
-                }
-
+                data.put(key, defaultValue);
                 emit(AttributeRegistry.UPDATE_ATTRIBUTE_OBSERVER, key, defaultValue);
                 return defaultValue;
             } else {

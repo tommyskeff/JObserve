@@ -26,6 +26,15 @@ public interface AttributeRegistry extends Observable {
     <T> @Nullable T getAttribute(@NotNull AttributeKey<T> key);
 
     /**
+     * Retrieves an attribute from a given attribute key. Will throw if the attribute is not
+     * present.
+     * @param key attribute key
+     * @return current attribute value
+     * @throws IllegalStateException if the attribute is not present
+     */
+    <T> @NotNull T getAttributeOrThrow(@NotNull AttributeKey<T> key);
+
+    /**
      * Retrieves an attribute from a given attribute key, but returns a default value if the
      * attribute is not stored. This method will not set the default value as the stored value
      * if the attribute is not stored.
@@ -46,12 +55,31 @@ public interface AttributeRegistry extends Observable {
     <T> @NotNull T getAttributeOrCreateDefault(@NotNull AttributeKey<T> key, @NotNull Supplier<@NotNull T> supplier);
 
     /**
+     * Checks whether a given attribute is stored in this attribute holder. It is worth noting
+     * that a null value is treated as the value not being stored.
+     * @param key attribute key
+     * @return whether a value is stored
+     */
+    default boolean hasAttribute(@NotNull AttributeKey<?> key) {
+        return getAttribute(key) != null;
+    }
+
+    /**
      * Sets an attribute with a given attribute key to a given value. If the given value is
      * null, the value will no longer be stored.
      * @param key attribute key
      * @param value new stored value
      */
     <T> void setAttribute(@NotNull AttributeKey<T> key, @Nullable T value);
+
+    /**
+     * Clears an attribute with a given attribute key. This action is equivalent to calling
+     * {@link #setAttribute(AttributeKey, Object)} with {@code null}.
+     * @param key attribute key
+     */
+    default <T> void clearAttribute(@NotNull AttributeKey<T> key) {
+        setAttribute(key, null);
+    }
 
     /**
      * Retrieves an attribute from a given attribute key, but returns a default value if the

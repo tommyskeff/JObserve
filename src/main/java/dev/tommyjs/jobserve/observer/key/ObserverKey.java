@@ -1,18 +1,15 @@
 package dev.tommyjs.jobserve.observer.key;
 
-import org.jetbrains.annotations.NotNull;
-
-import java.security.SecureRandom;
 import java.util.Objects;
-import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 
-public class ObserverKey {
+public sealed class ObserverKey permits DuplexKey, MonoKey {
 
-    protected static final @NotNull Random RANDOM = new SecureRandom();
+    protected static final AtomicInteger INDEX = new AtomicInteger();
 
     private final int keyId;
 
-    public ObserverKey(int keyId) {
+    protected ObserverKey(int keyId) {
         this.keyId = keyId;
     }
 

@@ -26,7 +26,7 @@ public final class DuplexKey<K, V> extends ObserverKey {
     }
 
     public static <K, V> DuplexKey<K, V> register(@NotNull Class<K> type1, @NotNull Class<V> type2) {
-        return new DuplexKey<>(RANDOM.nextInt(), type1, type2);
+        return new DuplexKey<>(INDEX.getAndIncrement(), type1, type2);
     }
 
 }
