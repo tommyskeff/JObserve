@@ -4,11 +4,9 @@ import dev.tommyjs.jobserve.dummy.DummyObservable;
 import dev.tommyjs.jobserve.observer.Observable;
 import dev.tommyjs.jobserve.observer.key.DuplexKey;
 import dev.tommyjs.jobserve.observer.key.MonoKey;
-import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
 
 public class ObserverTest {
 
@@ -66,6 +64,18 @@ public class ObserverTest {
 
         AtomicReference<Integer> ref = new AtomicReference<>();
         observable.observe(integerKey, ref::set).cancel();
+        observable.emit(integerKey, 50);
+
+        assert ref.get() == null;
+    }
+
+    @Test
+    public void WeakCancelTest() {
+        Observable observable = new DummyObservable();
+        MonoKey<Integer> integerKey = MonoKey.register(Integer.class);
+
+        AtomicReference<Integer> ref = new AtomicReference<>();
+        observable.observeWeak(integerKey, ref::set).cancel();
         observable.emit(integerKey, 50);
 
         assert ref.get() == null;

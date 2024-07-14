@@ -4,71 +4,83 @@ import dev.tommyjs.jobserve.observer.ObserverSubscription;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.ref.WeakReference;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
-import java.util.WeakHashMap;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 public class ObserverSet {
 
-    private final ReadWriteLock rwLock;
-    private final Set<Subscription> strongSubscriptions;
-    private final Set<Subscription> weakSubscriptions;
+    private final Set<CallableSubscription> subscriptions;
     
     public ObserverSet() {
-        this.rwLock = new ReentrantReadWriteLock();
-        this.strongSubscriptions = new HashSet<>();
-        this.weakSubscriptions = Collections.newSetFromMap(new WeakHashMap<>());
+        this.subscriptions = Collections.newSetFromMap(new ConcurrentHashMap<>());
     }
     
     public ObserverSubscription subscribe(@NotNull Consumer<Object> consumer, boolean strong) {
-        Subscription subscription = new Subscription(consumer, strong);
-
-        rwLock.writeLock().lock();
-        try {
-            (strong ? strongSubscriptions : weakSubscriptions).add(subscription);
-        } finally {
-            rwLock.writeLock().unlock();
-        }
-
+        CallableSubscription subscription = strong ? new StrongSubscription(consumer) : new WeakSubscription(consumer);
+        subscriptions.add(subscription);
         return subscription;
     }
     
     public void call(@Nullable Object object) {
-        rwLock.readLock().lock();
-        try {
-            for (Subscription subscription : strongSubscriptions) subscription.call(object);
-            for (Subscription subscription : weakSubscriptions) subscription.call(object);
-        } finally {
-            rwLock.readLock().unlock();
+        for (CallableSubscription subscription : subscriptions) {
+            subscription.call(object);
         }
     }
 
-    private class Subscription implements ObserverSubscription {
+    private interface CallableSubscription extends ObserverSubscription {
+
+        void call(@Nullable Object object);
+
+    }
+
+    private class StrongSubscription implements CallableSubscription {
 
         private final Consumer<Object> consumer;
-        private final boolean strong;
 
-        public Subscription(Consumer<Object> consumer, boolean strong) {
+        public StrongSubscription(Consumer<Object> consumer) {
             this.consumer = consumer;
-            this.strong = strong;
         }
 
+        @Override
         public void call(@Nullable Object object) {
             consumer.accept(object);
         }
 
         @Override
         public void cancel() {
-            rwLock.writeLock().lock();
-            try {
-                (strong ? strongSubscriptions : weakSubscriptions).remove(this);
-            } finally {
-                rwLock.writeLock().unlock();
+            subscriptions.remove(this);
+        }
+
+    }
+
+    private class WeakSubscription implements CallableSubscription {
+
+        private final WeakReference<Consumer<Object>> consumerRef;
+
+        public WeakSubscription(Consumer<Object> consumer) {
+            this.consumerRef = new WeakReference<>(consumer);
+        }
+
+        @Override
+        public void call(@Nullable Object object) {
+            Consumer<Object> consumer = consumerRef.get();
+            if (consumer == null) {
+                cancel();
+            } else {
+                consumer.accept(object);
             }
+        }
+
+        @Override
+        public void cancel() {
+            if (consumerRef.get() != null) {
+                consumerRef.clear();
+            }
+
+            subscriptions.remove(this);
         }
 
     }
