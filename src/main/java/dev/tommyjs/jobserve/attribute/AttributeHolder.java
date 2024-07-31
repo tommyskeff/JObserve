@@ -2,10 +2,12 @@ package dev.tommyjs.jobserve.attribute;
 
 import dev.tommyjs.jobserve.observer.Observable;
 import dev.tommyjs.jobserve.observer.ObserverEmitter;
+import dev.tommyjs.jobserve.observer.ObserverSubscription;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -15,7 +17,7 @@ import java.util.function.Supplier;
  * Attributes are indexed by {@link AttributeKey} objects, which can be created with {@link AttributeKey#register(Class)}.
  * These keys are used to get and set objects with the type declared in the attribute type parameter.
  */
-public interface AttributeHolder extends Observable, AttributeObservable {
+public interface AttributeHolder extends Observable {
 
     /**
      * Retrieves the {@link AttributeRegistry} instance powering this {@link AttributeHolder}.
@@ -25,8 +27,8 @@ public interface AttributeHolder extends Observable, AttributeObservable {
     @NotNull AttributeRegistry getAttributes();
 
     @Override
-    default @NotNull ObserverEmitter getObserver() {
-        return getAttributes().getObserver();
+    default @NotNull ObserverEmitter getEmitter() {
+        return getAttributes().getEmitter();
     }
 
     /**
@@ -144,6 +146,21 @@ public interface AttributeHolder extends Observable, AttributeObservable {
      */
     default <T> @NotNull Optional<T> getAttributeAsOptional(@NotNull AttributeKey<T> key) {
         return getAttributes().getAsOptional(key);
+    }
+
+    /**
+     * Subscribes to mutations of a given {@link AttributeKey} on an {@link Observable} with attributes.
+     * @param key attribute key
+     * @param consumer callback
+     * @return cancellable subscription
+     */
+    default @NotNull <T> ObserverSubscription observe(@NotNull AttributeKey<T> key, @NotNull Consumer<T> consumer) {
+        return observe(AttributeRegistry.UPDATE_ATTRIBUTE_OBSERVER, (k, o) -> {
+            if (k == key) {
+                //noinspection unchecked
+                consumer.accept((T) o);
+            }
+        });
     }
 
 }

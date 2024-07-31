@@ -1,11 +1,17 @@
 package dev.tommyjs.jobserve;
 
+import dev.tommyjs.jobserve.attribute.AttributeHolder;
+import dev.tommyjs.jobserve.attribute.AttributeKey;
+import dev.tommyjs.jobserve.attribute.AttributeRegistry;
+import dev.tommyjs.jobserve.dummy.DummyAttributeHolder;
 import dev.tommyjs.jobserve.dummy.DummyObservable;
 import dev.tommyjs.jobserve.observer.Observable;
 import dev.tommyjs.jobserve.observer.key.DuplexKey;
 import dev.tommyjs.jobserve.observer.key.MonoKey;
+import dev.tommyjs.jobserve.util.EmissionWatcher;
 import org.junit.jupiter.api.Test;
 
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class ObserverTest {
@@ -79,6 +85,18 @@ public class ObserverTest {
         observable.emit(integerKey, 50);
 
         assert ref.get() == null;
+    }
+
+    @Test
+    public void AttributeObserverTest() {
+        AttributeHolder holder = new DummyAttributeHolder();
+        AttributeKey<Integer> key = AttributeKey.register(Integer.class);
+
+        EmissionWatcher watcher = EmissionWatcher.start(holder, AttributeRegistry.UPDATE_ATTRIBUTE_OBSERVER, (a, o) -> a == key);
+        holder.setAttribute(key, 100);
+
+        assert Objects.equals(holder.getAttribute(key), 100);
+        assert watcher.finish();
     }
 
 }

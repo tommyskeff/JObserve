@@ -20,4 +20,4 @@ jobs:
           export NEXUS_USERNAME="${{ secrets.NEXUS_USERNAME }}"
           export NEXUS_PASSWORD="${{ secrets.NEXUS_PASSWORD }}"
 
-          mvn -s $GITHUB_WORKSPACE/settings.xml deploy
+          mvn -s $GITHUB_WORKSPACE/settings.xml test deploy

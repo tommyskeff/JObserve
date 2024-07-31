@@ -29,7 +29,12 @@ public interface Observable {
      * should always return the same instance.
      * @return observer emitter powering this object
      */
-    @NotNull ObserverEmitter getObserver();
+    @NotNull ObserverEmitter getEmitter();
+
+    @Deprecated(since = "0.3.3")
+    default @NotNull ObserverEmitter getObserver() {
+        return getEmitter();
+    }
 
     /**
      * Subscribes to all emissions on a specified {@link ObserverKey}. Until {@link ObserverSubscription#cancel()}
@@ -50,7 +55,7 @@ public interface Observable {
      * @param <T> emission argument type
      */
     default <T> @NotNull ObserverSubscription observe(@NotNull MonoKey<T> key, @NotNull Consumer<T> consumer) {
-        return getObserver().observe(key, consumer);
+        return getEmitter().observe(key, consumer);
     }
 
     /**
@@ -73,7 +78,7 @@ public interface Observable {
      * @param <V> 2nd emission argument type
      */
     default <K, V> @NotNull ObserverSubscription observe(@NotNull DuplexKey<K, V> key, @NotNull BiConsumer<K, V> consumer) {
-        return getObserver().observe(key, consumer);
+        return getEmitter().observe(key, consumer);
     }
 
     /**
@@ -92,7 +97,7 @@ public interface Observable {
      * @param <T> emission argument type
      */
     default <T> @NotNull ObserverSubscription observeWeak(@NotNull MonoKey<T> key, @NotNull Consumer<T> consumer) {
-        return getObserver().observe(key, consumer);
+        return getEmitter().observe(key, consumer);
     }
 
     /**
@@ -111,7 +116,7 @@ public interface Observable {
      * @param <V> 2nd emission argument type
      */
     default <K, V> @NotNull ObserverSubscription observeWeak(@NotNull DuplexKey<K, V> key, @NotNull BiConsumer<K, V> consumer) {
-        return getObserver().observe(key, consumer);
+        return getEmitter().observe(key, consumer);
     }
 
     /**
@@ -121,7 +126,7 @@ public interface Observable {
      * @param value emission value
      */
     default <T> void emit(@NotNull MonoKey<T> key, @Nullable T value) {
-        getObserver().emit(key, value);
+        getEmitter().emit(key, value);
     }
 
     /**
@@ -132,7 +137,7 @@ public interface Observable {
      * @param value2 2nd emission value
      */
     default <K, V> void emit(@NotNull DuplexKey<K, V> key, @Nullable K value1, @Nullable V value2) {
-        getObserver().emit(key, value1, value2);
+        getEmitter().emit(key, value1, value2);
     }
 
 }

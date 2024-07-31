@@ -4,13 +4,14 @@ import dev.tommyjs.jobserve.attribute.AttributeKey;
 import dev.tommyjs.jobserve.attribute.AttributeRegistry;
 import dev.tommyjs.jobserve.observer.Observable;
 import dev.tommyjs.jobserve.observer.ObserverEmitter;
-import dev.tommyjs.jobserve.observer.impl.ObserverEmitterImpl;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Function;
@@ -19,14 +20,14 @@ import java.util.function.Supplier;
 @SuppressWarnings("unchecked")
 public class AttributeRegistryImpl implements AttributeRegistry, Observable {
 
-    private final ObserverEmitter emitter;
     private final ReadWriteLock mutex;
-    private final Map<AttributeKey<?>, Object> data;
+    private final AtomicReference<ObserverEmitter> emitter;
+    private final AtomicReference<Map<AttributeKey<?>, Object>> data;
 
     public AttributeRegistryImpl() {
-        this.emitter = new ObserverEmitterImpl();
         this.mutex = new ReentrantReadWriteLock();
-        this.data = new ConcurrentHashMap<>();
+        this.emitter = new AtomicReference<>();
+        this.data = new AtomicReference<>();
     }
 
     protected <T> void checkArgType(@NotNull AttributeKey<T> key, @Nullable T value) {
@@ -43,11 +44,15 @@ public class AttributeRegistryImpl implements AttributeRegistry, Observable {
         }
     }
 
+    protected Map<AttributeKey<?>, Object> getData() {
+        return data.updateAndGet(map -> Objects.requireNonNullElseGet(map, HashMap::new));
+    }
+
     @Override
     public <T> @Nullable T getAttribute(@NotNull AttributeKey<T> key) {
         mutex.readLock().lock();
         try {
-            Object value = data.get(key);
+            Object value = getData().get(key);
             checkValueType(key, value);
             return (T) value;
         } finally {
@@ -59,7 +64,7 @@ public class AttributeRegistryImpl implements AttributeRegistry, Observable {
     public <T> @NotNull T getAttributeOrThrow(@NotNull AttributeKey<T> key) {
         mutex.readLock().lock();
         try {
-            Object value = data.get(key);
+            Object value = getData().get(key);
             if (value == null) {
                 throw new IllegalStateException("Attribute not present");
             } else {
@@ -77,7 +82,7 @@ public class AttributeRegistryImpl implements AttributeRegistry, Observable {
 
         mutex.readLock().lock();
         try {
-            Object value = data.get(key);
+            Object value = getData().get(key);
             checkValueType(key, value);
             return value == null ? defaultValue : ((T) value);
         } finally {
@@ -92,9 +97,9 @@ public class AttributeRegistryImpl implements AttributeRegistry, Observable {
         mutex.writeLock().lock();
         try {
             if (value == null) {
-                data.remove(key);
+                getData().remove(key);
             } else {
-                data.put(key, value);
+                getData().put(key, value);
             }
 
             emit(AttributeRegistry.UPDATE_ATTRIBUTE_OBSERVER, key, value);
@@ -109,11 +114,11 @@ public class AttributeRegistryImpl implements AttributeRegistry, Observable {
 
         mutex.writeLock().lock();
         try {
-            Object value = data.get(key);
+            Object value = getData().get(key);
             checkValueType(key, value);
 
             if (value == null) {
-                data.put(key, defaultValue);
+                getData().put(key, defaultValue);
                 emit(AttributeRegistry.UPDATE_ATTRIBUTE_OBSERVER, key, defaultValue);
                 return defaultValue;
             } else {
@@ -128,7 +133,7 @@ public class AttributeRegistryImpl implements AttributeRegistry, Observable {
     public <T> @NotNull T getAttributeOrCreateDefault(@NotNull AttributeKey<T> key, @NotNull Supplier<T> supplier) {
         mutex.writeLock().lock();
         try {
-            Object value = data.get(key);
+            Object value = getData().get(key);
             checkValueType(key, value);
 
             if (value == null) {
@@ -138,7 +143,7 @@ public class AttributeRegistryImpl implements AttributeRegistry, Observable {
                     throw new IllegalArgumentException("Default value must not be null");
                 } else {
                     checkArgType(key, defaultValue);
-                    data.put(key, defaultValue);
+                    getData().put(key, defaultValue);
                 }
 
                 emit(AttributeRegistry.UPDATE_ATTRIBUTE_OBSERVER, key, defaultValue);
@@ -155,14 +160,14 @@ public class AttributeRegistryImpl implements AttributeRegistry, Observable {
     public <T> T getAndUpdate(@NotNull AttributeKey<T> key, @NotNull Function<@Nullable T, @Nullable T> function) {
         mutex.writeLock().lock();
         try {
-            Object value = data.get(key);
+            Object value = getData().get(key);
             checkValueType(key, value);
 
             T finalValue = function.apply((T) value);
             if (finalValue == null) {
-                data.remove(key);
+                getData().remove(key);
             } else {
-                data.put(key, finalValue);
+                getData().put(key, finalValue);
             }
 
             emit(AttributeRegistry.UPDATE_ATTRIBUTE_OBSERVER, key, finalValue);
@@ -176,14 +181,14 @@ public class AttributeRegistryImpl implements AttributeRegistry, Observable {
     public <T> T updateAndGet(@NotNull AttributeKey<T> key, @NotNull Function<@Nullable T, @Nullable T> function) {
         mutex.writeLock().lock();
         try {
-            Object value = data.get(key);
+            Object value = getData().get(key);
             checkValueType(key, value);
 
             T finalValue = function.apply((T) value);
             if (finalValue == null) {
-                data.remove(key);
+                getData().remove(key);
             } else {
-                data.put(key, finalValue);
+                getData().put(key, finalValue);
             }
 
             emit(AttributeRegistry.UPDATE_ATTRIBUTE_OBSERVER, key, finalValue);
@@ -199,8 +204,8 @@ public class AttributeRegistryImpl implements AttributeRegistry, Observable {
     }
 
     @Override
-    public @NotNull ObserverEmitter getObserver() {
-        return emitter;
+    public @NotNull ObserverEmitter getEmitter() {
+        return emitter.updateAndGet(e -> Objects.requireNonNullElseGet(e, ObserverEmitter::create));
     }
 
 }

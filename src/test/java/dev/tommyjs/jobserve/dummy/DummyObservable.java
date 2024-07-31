@@ -9,7 +9,7 @@ public class DummyObservable implements Observable {
     private final ObserverEmitter emitter = ObserverEmitter.create();
 
     @Override
-    public @NotNull ObserverEmitter getObserver() {
+    public @NotNull ObserverEmitter getEmitter() {
         return emitter;
     }
 

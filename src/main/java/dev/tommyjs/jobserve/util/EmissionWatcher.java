@@ -18,7 +18,7 @@ import java.util.function.Predicate;
  * {@link EmissionWatcher#finish()} can be called, and this will return whether there was an emission
  * between starting the watcher and now.]
  */
-public class EmissionWatcher {
+public final class EmissionWatcher {
 
     private final @NotNull ObserverSubscription subscription;
     private final @NotNull AtomicBoolean trip;
