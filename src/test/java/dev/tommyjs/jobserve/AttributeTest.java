@@ -3,10 +3,15 @@ package dev.tommyjs.jobserve;
 import dev.tommyjs.jobserve.attribute.AttributeHolder;
 import dev.tommyjs.jobserve.attribute.AttributeKey;
 import dev.tommyjs.jobserve.dummy.DummyAttributeHolder;
+import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class AttributeTest {
 
@@ -16,6 +21,14 @@ public class AttributeTest {
         AttributeKey<Integer> key2 = AttributeKey.register(Integer.class);
 
         assert !key1.equals(key2);
+    }
+
+    @Test
+    public void HashCodeTest() {
+        AttributeKey<Integer> key1 = AttributeKey.register(Integer.class);
+        AttributeKey<Integer> key2 = AttributeKey.register(Integer.class);
+
+        assert !Objects.equals(key1.hashCode(), key2.hashCode());
     }
 
     @Test
@@ -42,6 +55,16 @@ public class AttributeTest {
         holder.setAttribute(integerAttribute, 100);
 
         assert Objects.equals(holder.getAttribute(integerAttribute), 100);
+    }
+
+    @Test
+    public void GenericTest() {
+        AttributeKey<List<Integer>> listAttribute = AttributeKey.register(List.class);
+        AttributeHolder holder = new DummyAttributeHolder();
+        holder.setAttribute(listAttribute, List.of(3, 4, 5));
+
+        List<Integer> a = holder.getAttribute(listAttribute);
+        assert a != null && a.size() == 3;
     }
 
     @Test
@@ -154,17 +177,8 @@ public class AttributeTest {
         AttributeHolder holder = new DummyAttributeHolder();
 
         holder.setAttribute(integerAttribute, 100);
-
-        boolean thrown = false;
-
-        int result = 0;
-        try {
-            result = holder.getAttributeOrThrow(integerAttribute);
-        } catch (IllegalStateException e) {
-            thrown = true;
-        }
-
-        assert !thrown && Objects.equals(result, 100);
+        int result = holder.getAttributeOrThrow(integerAttribute);
+        assert Objects.equals(result, 100);
     }
 
     @Test
@@ -172,15 +186,9 @@ public class AttributeTest {
         AttributeKey<Integer> integerAttribute = AttributeKey.register(Integer.class);
         AttributeHolder holder = new DummyAttributeHolder();
 
-        boolean thrown = false;
-
-        try {
+        assertThrows(IllegalStateException.class, () -> {
             holder.getAttributeOrThrow(integerAttribute);
-        } catch (IllegalStateException e) {
-            thrown = true;
-        }
-
-        assert thrown;
+        });
     }
 
     @Test
@@ -191,15 +199,19 @@ public class AttributeTest {
         holder.setAttribute(integerAttribute, 100);
         holder.clearAttribute(integerAttribute);
 
-        boolean thrown = false;
-
-        try {
+        assertThrows(IllegalStateException.class, () -> {
             holder.getAttributeOrThrow(integerAttribute);
-        } catch (IllegalStateException e) {
-            thrown = true;
-        }
+        });
+    }
 
-        assert thrown;
+    @Test
+    public void TypeMismatchTest() {
+        AttributeKey<Integer> integerAttribute = AttributeKey.register(String.class);
+        AttributeHolder holder = new DummyAttributeHolder();
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            holder.setAttribute(integerAttribute, 2);
+        });
     }
 
 

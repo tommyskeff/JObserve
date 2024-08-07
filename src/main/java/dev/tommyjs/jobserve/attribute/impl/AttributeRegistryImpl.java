@@ -31,15 +31,15 @@ public class AttributeRegistryImpl implements AttributeRegistry, Observable {
     }
 
     protected <T> void checkArgType(@NotNull AttributeKey<T> key, @Nullable T value) {
-        if (value != null && !key.getClazz().isAssignableFrom(value.getClass())) {
-            throw new IllegalArgumentException("Assignment to attribute of type " + key.getClazz().getName() + " with " +
+        if (value != null && !key.getType().isAssignableFrom(value.getClass())) {
+            throw new IllegalArgumentException("Assignment to attribute of type " + key.getType().getName() + " with " +
                 "value of type " + value.getClass().getName());
         }
     }
 
     protected <T> void checkValueType(@NotNull AttributeKey<T> key, @Nullable Object value) {
-        if (value != null && !key.getClazz().isAssignableFrom(value.getClass())) {
-            throw new IllegalStateException("Attribute of type " + key.getClazz().getName() + " contains value " +
+        if (value != null && !key.getType().isAssignableFrom(value.getClass())) {
+            throw new IllegalStateException("Attribute of type " + key.getType().getName() + " contains value " +
                 "of type " + value.getClass().getName());
         }
     }

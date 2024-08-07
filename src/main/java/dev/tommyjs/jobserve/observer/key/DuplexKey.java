@@ -5,14 +5,13 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Observer key with two arguments.
  */
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "unchecked"})
 public final class DuplexKey<K, V> extends ObserverKey {
 
     private final @NotNull Class<K> type1;
     private final @NotNull Class<V> type2;
 
-    private DuplexKey(int keyId, @NotNull Class<K> type1, @NotNull Class<V> type2) {
-        super(keyId);
+    private DuplexKey(@NotNull Class<K> type1, @NotNull Class<V> type2) {
         this.type1 = type1;
         this.type2 = type2;
     }
@@ -25,8 +24,8 @@ public final class DuplexKey<K, V> extends ObserverKey {
         return type2;
     }
 
-    public static <K, V> DuplexKey<K, V> register(@NotNull Class<K> type1, @NotNull Class<V> type2) {
-        return new DuplexKey<>(INDEX.getAndIncrement(), type1, type2);
+    public static <K, V> DuplexKey<K, V> register(@NotNull Class<?> type1, @NotNull Class<?> type2) {
+        return (DuplexKey<K, V>) new DuplexKey<>(type1, type2);
     }
 
 }

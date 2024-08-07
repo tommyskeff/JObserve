@@ -5,22 +5,21 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Observer key with a single argument.
  */
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "unchecked"})
 public final class MonoKey<T> extends ObserverKey {
 
-    private final @NotNull Class<T> type;
+    private final @NotNull Class<? extends T> type;
 
-    private MonoKey(int keyId, @NotNull Class<T> type) {
-        super(keyId);
+    private MonoKey(@NotNull Class<? extends T> type) {
         this.type = type;
     }
 
-    public @NotNull Class<T> getType() {
+    public @NotNull Class<? extends T> getType() {
         return type;
     }
 
-    public static <T> @NotNull MonoKey<T> register(@NotNull Class<T> type) {
-        return new MonoKey<>(INDEX.getAndIncrement(), type);
+    public static <T> @NotNull MonoKey<T> register(@NotNull Class<?> type) {
+        return (MonoKey<T>) new MonoKey<>(type);
     }
 
 }

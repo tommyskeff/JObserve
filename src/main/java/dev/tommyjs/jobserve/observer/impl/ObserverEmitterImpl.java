@@ -13,7 +13,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-@SuppressWarnings("unchecked")
 public class ObserverEmitterImpl implements ObserverEmitter {
 
     private final Map<ObserverKey, ObserverSet> map;
@@ -28,27 +27,33 @@ public class ObserverEmitterImpl implements ObserverEmitter {
 
     @Override
     public <T> @NotNull ObserverSubscription observe(@NotNull MonoKey<T> key, @NotNull Consumer<T> consumer) {
-        return observe0(key, o -> consumer.accept((T) o), true);
+        return observe0(key, o -> consumer.accept(key.getType().cast(o)), true);
     }
 
     @Override
     public <K, V> @NotNull ObserverSubscription observe(@NotNull DuplexKey<K, V> key, @NotNull BiConsumer<K, V> consumer) {
         return observe0(key, o -> {
             Object[] objects = (Object[]) o;
-            consumer.accept((K) objects[0], (V) objects[1]);
+            K arg1 = key.getType1().cast(objects[0]);
+            V arg2 = key.getType2().cast(objects[1]);
+
+            consumer.accept(arg1, arg2);
         }, true);
     }
 
     @Override
     public @NotNull <T> ObserverSubscription observeWeak(@NotNull MonoKey<T> key, @NotNull Consumer<T> consumer) {
-        return observe0(key, o -> consumer.accept((T) o), false);
+        return observe0(key, o -> key.getType().cast(o), false);
     }
 
     @Override
     public @NotNull <K, V> ObserverSubscription observeWeak(@NotNull DuplexKey<K, V> key, @NotNull BiConsumer<K, V> consumer) {
         return observe0(key, o -> {
             Object[] objects = (Object[]) o;
-            consumer.accept((K) objects[0], (V) objects[1]);
+            K arg1 = key.getType1().cast(objects[0]);
+            V arg2 = key.getType2().cast(objects[1]);
+
+            consumer.accept(arg1, arg2);
         }, false);
     }
 
