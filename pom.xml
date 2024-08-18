@@ -6,7 +6,7 @@
 
     <groupId>dev.tommyjs</groupId>
     <artifactId>JObserve</artifactId>
-    <version>0.3.4</version>
+    <version>0.3.5</version>
 
     <properties>
         <java.version>20</java.version>

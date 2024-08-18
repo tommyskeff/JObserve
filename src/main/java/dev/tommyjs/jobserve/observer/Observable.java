@@ -97,7 +97,7 @@ public interface Observable {
      * @param <T> emission argument type
      */
     default <T> @NotNull ObserverSubscription observeWeak(@NotNull MonoKey<T> key, @NotNull Consumer<T> consumer) {
-        return getEmitter().observe(key, consumer);
+        return getEmitter().observeWeak(key, consumer);
     }
 
     /**
@@ -116,7 +116,7 @@ public interface Observable {
      * @param <V> 2nd emission argument type
      */
     default <K, V> @NotNull ObserverSubscription observeWeak(@NotNull DuplexKey<K, V> key, @NotNull BiConsumer<K, V> consumer) {
-        return getEmitter().observe(key, consumer);
+        return getEmitter().observeWeak(key, consumer);
     }
 
     /**

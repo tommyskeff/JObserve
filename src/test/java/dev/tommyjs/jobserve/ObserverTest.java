@@ -11,8 +11,11 @@ import dev.tommyjs.jobserve.observer.key.MonoKey;
 import dev.tommyjs.jobserve.util.EmissionWatcher;
 import org.junit.jupiter.api.Test;
 
+import java.lang.ref.WeakReference;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class ObserverTest {
 
@@ -97,6 +100,19 @@ public class ObserverTest {
 
         assert Objects.equals(holder.getAttribute(key), 100);
         assert watcher.finish();
+    }
+
+    @Test
+    public void WeakTest() {
+        Observable observable = new DummyObservable();
+        MonoKey<Integer> integerKey = MonoKey.register(Integer.class);
+        WeakReference<Consumer<Integer>> consumer = new WeakReference<>(System.out::println);
+
+        assert consumer.get() != null;
+        observable.observeWeak(integerKey, Objects.requireNonNull(consumer.get()));
+
+        System.gc();
+        assert consumer.get() == null;
     }
 
 }
