@@ -32,14 +32,14 @@ public class AttributeRegistryImpl implements AttributeRegistry, Observable {
 
     protected <T> void checkArgType(@NotNull AttributeKey<T> key, @Nullable T value) {
         if (value != null && !key.getType().isAssignableFrom(value.getClass())) {
-            throw new IllegalArgumentException("Assignment to attribute of type " + key.getType().getName() + " with " +
+            throw new IllegalArgumentException("Assignment to attribute of type " + key.getType() + " with " +
                 "value of type " + value.getClass().getName());
         }
     }
 
     protected <T> void checkValueType(@NotNull AttributeKey<T> key, @Nullable Object value) {
         if (value != null && !key.getType().isAssignableFrom(value.getClass())) {
-            throw new IllegalStateException("Attribute of type " + key.getType().getName() + " contains value " +
+            throw new IllegalStateException("Attribute of type " + key.getType() + " contains value " +
                 "of type " + value.getClass().getName());
         }
     }
@@ -101,44 +101,50 @@ public class AttributeRegistryImpl implements AttributeRegistry, Observable {
             } else {
                 getData().put(key, value);
             }
-
-            emit(AttributeRegistry.UPDATE_ATTRIBUTE_OBSERVER, key, value);
         } finally {
             mutex.writeLock().unlock();
         }
+
+        emit(AttributeRegistry.UPDATE_ATTRIBUTE_OBSERVER, new AttributeUpdate<>(key, value));
     }
 
     @Override
     public <T> @NotNull T getAttributeOrSetDefault(@NotNull AttributeKey<T> key, @NotNull T defaultValue) {
         checkArgType(key, defaultValue);
+        Object value;
 
         mutex.writeLock().lock();
         try {
-            Object value = getData().get(key);
+            value = getData().get(key);
             checkValueType(key, value);
 
             if (value == null) {
                 getData().put(key, defaultValue);
-                emit(AttributeRegistry.UPDATE_ATTRIBUTE_OBSERVER, key, defaultValue);
-                return defaultValue;
-            } else {
-                return (T) value;
             }
         } finally {
             mutex.writeLock().unlock();
         }
+
+        if (value == null) {
+            value = defaultValue;
+            emit(AttributeRegistry.UPDATE_ATTRIBUTE_OBSERVER, new AttributeUpdate<>(key, defaultValue));
+        }
+
+        return (T) value;
     }
 
     @Override
     public <T> @NotNull T getAttributeOrCreateDefault(@NotNull AttributeKey<T> key, @NotNull Supplier<T> supplier) {
+        Object value;
+        T defaultValue = null;
+
         mutex.writeLock().lock();
         try {
-            Object value = getData().get(key);
+            value = getData().get(key);
             checkValueType(key, value);
 
             if (value == null) {
-                T defaultValue = supplier.get();
-
+                defaultValue = supplier.get();
                 if (defaultValue == null) {
                     throw new IllegalArgumentException("Default value must not be null");
                 } else {
@@ -146,56 +152,65 @@ public class AttributeRegistryImpl implements AttributeRegistry, Observable {
                     getData().put(key, defaultValue);
                 }
 
-                emit(AttributeRegistry.UPDATE_ATTRIBUTE_OBSERVER, key, defaultValue);
-                return defaultValue;
-            } else {
-                return (T) value;
+                emit(AttributeRegistry.UPDATE_ATTRIBUTE_OBSERVER, new AttributeUpdate<>(key, defaultValue));
             }
         } finally {
             mutex.writeLock().unlock();
         }
+
+        if (value == null) {
+            value = defaultValue;
+            emit(AttributeRegistry.UPDATE_ATTRIBUTE_OBSERVER, new AttributeUpdate<>(key, defaultValue));
+        }
+
+        return (T) value;
     }
 
     @Override
     public <T> T getAndUpdate(@NotNull AttributeKey<T> key, @NotNull Function<@Nullable T, @Nullable T> function) {
+        T value;
+
         mutex.writeLock().lock();
         try {
-            Object value = getData().get(key);
-            checkValueType(key, value);
+            Object prev = getData().get(key);
+            checkValueType(key, prev);
 
-            T finalValue = function.apply((T) value);
-            if (finalValue == null) {
+            value = function.apply((T) prev);
+            if (value == null) {
                 getData().remove(key);
             } else {
-                getData().put(key, finalValue);
+                getData().put(key, value);
             }
-
-            emit(AttributeRegistry.UPDATE_ATTRIBUTE_OBSERVER, key, finalValue);
-            return (T) value;
         } finally {
             mutex.writeLock().unlock();
         }
+
+        emit(AttributeRegistry.UPDATE_ATTRIBUTE_OBSERVER, new AttributeUpdate<>(key, value));
+
+        return value;
     }
 
     @Override
     public <T> T updateAndGet(@NotNull AttributeKey<T> key, @NotNull Function<@Nullable T, @Nullable T> function) {
+        T value;
+
         mutex.writeLock().lock();
         try {
-            Object value = getData().get(key);
-            checkValueType(key, value);
+            Object prev = getData().get(key);
+            checkValueType(key, prev);
 
-            T finalValue = function.apply((T) value);
-            if (finalValue == null) {
+            value = function.apply((T) prev);
+            if (value == null) {
                 getData().remove(key);
             } else {
-                getData().put(key, finalValue);
+                getData().put(key, value);
             }
-
-            emit(AttributeRegistry.UPDATE_ATTRIBUTE_OBSERVER, key, finalValue);
-            return finalValue;
         } finally {
             mutex.writeLock().unlock();
         }
+
+        emit(AttributeRegistry.UPDATE_ATTRIBUTE_OBSERVER, new AttributeUpdate<>(key, value));
+        return value;
     }
 
     @Override

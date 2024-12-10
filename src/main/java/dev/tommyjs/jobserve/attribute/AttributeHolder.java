@@ -154,11 +154,11 @@ public interface AttributeHolder extends Observable {
      * @param consumer callback
      * @return cancellable subscription
      */
+    @SuppressWarnings("unchecked")
     default @NotNull <T> ObserverSubscription observe(@NotNull AttributeKey<T> key, @NotNull Consumer<T> consumer) {
-        return observe(AttributeRegistry.UPDATE_ATTRIBUTE_OBSERVER, (k, o) -> {
-            if (k == key) {
-                //noinspection unchecked
-                consumer.accept((T) o);
+        return observe(AttributeRegistry.UPDATE_ATTRIBUTE_OBSERVER, update -> {
+            if (update.key() == key) {
+                consumer.accept((T) update.object());
             }
         });
     }

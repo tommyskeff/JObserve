@@ -6,8 +6,6 @@ import dev.tommyjs.jobserve.attribute.AttributeRegistry;
 import dev.tommyjs.jobserve.dummy.DummyAttributeHolder;
 import dev.tommyjs.jobserve.dummy.DummyObservable;
 import dev.tommyjs.jobserve.observer.Observable;
-import dev.tommyjs.jobserve.observer.key.DuplexKey;
-import dev.tommyjs.jobserve.observer.key.MonoKey;
 import dev.tommyjs.jobserve.util.EmissionWatcher;
 import org.junit.jupiter.api.Test;
 
@@ -15,7 +13,6 @@ import java.lang.ref.WeakReference;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 public class ObserverTest {
 

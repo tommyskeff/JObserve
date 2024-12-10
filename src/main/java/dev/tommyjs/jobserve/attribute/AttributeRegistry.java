@@ -2,7 +2,8 @@ package dev.tommyjs.jobserve.attribute;
 
 import dev.tommyjs.jobserve.attribute.impl.AttributeRegistryImpl;
 import dev.tommyjs.jobserve.observer.Observable;
-import dev.tommyjs.jobserve.observer.key.DuplexKey;
+import dev.tommyjs.jobserve.observer.key.ObserverKey;
+import dev.tommyjs.jobserve.util.TypeRef;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -16,7 +17,7 @@ import java.util.function.Supplier;
  */
 public interface AttributeRegistry extends Observable {
 
-    DuplexKey<AttributeKey, Object> UPDATE_ATTRIBUTE_OBSERVER = DuplexKey.register(AttributeKey.class, Object.class);
+    ObserverKey<AttributeUpdate<?>> UPDATE_ATTRIBUTE_OBSERVER = ObserverKey.register(new TypeRef<>(){});
 
     /**
      * Retrieves an attribute from a given attribute key.
@@ -123,6 +124,9 @@ public interface AttributeRegistry extends Observable {
      */
     static @NotNull AttributeRegistry create() {
         return new AttributeRegistryImpl();
+    }
+
+    record AttributeUpdate<T>(@NotNull AttributeKey<T> key, @Nullable T object) {
     }
 
 }

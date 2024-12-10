@@ -2,8 +2,6 @@ package dev.tommyjs.jobserve.util;
 
 import dev.tommyjs.jobserve.observer.Observable;
 import dev.tommyjs.jobserve.observer.ObserverSubscription;
-import dev.tommyjs.jobserve.observer.key.DuplexKey;
-import dev.tommyjs.jobserve.observer.key.MonoKey;
 import dev.tommyjs.jobserve.observer.key.ObserverKey;
 import org.jetbrains.annotations.NotNull;
 
@@ -52,7 +50,7 @@ public final class EmissionWatcher {
      * @param filter trigger filter
      * @return started emission watcher
      */
-    public static <T> EmissionWatcher start(@NotNull Observable object, @NotNull MonoKey<T> key, @NotNull Predicate<T> filter) {
+    public static <T> EmissionWatcher start(@NotNull Observable object, @NotNull ObserverKey<T> key, @NotNull Predicate<T> filter) {
         AtomicBoolean trip = new AtomicBoolean();
         ObserverSubscription sub = object.observe(key, v -> {
             if (filter.test(v)) trip.set(true);
@@ -68,37 +66,8 @@ public final class EmissionWatcher {
      * @param key observer key to subscribe to
      * @return started emission watcher
      */
-    public static <T> EmissionWatcher start(@NotNull Observable object, @NotNull MonoKey<T> key) {
+    public static <T> EmissionWatcher start(@NotNull Observable object, @NotNull ObserverKey<T> key) {
         return start(object, key, _t -> true);
-    }
-
-    /**
-     * Starts a new emission watcher with a given observed object, key, and trigger filter. This
-     * method will immediately subscribe. Emissions from the object will only be accepted if they
-     * pass the given trigger filter.
-     * @param object observable object
-     * @param key observer key to subscribe to
-     * @param filter trigger filter
-     * @return started emission watcher
-     */
-    public static <K, V> EmissionWatcher start(@NotNull Observable object, @NotNull DuplexKey<K, V> key, @NotNull BiPredicate<K, V> filter) {
-        AtomicBoolean trip = new AtomicBoolean();
-        ObserverSubscription sub = object.observe(key, (k, v) -> {
-            if (filter.test(k, v)) trip.set(true);
-        });
-
-        return new EmissionWatcher(sub, trip);
-    }
-
-    /**
-     * Starts a new emission watcher with a given observed object, key, and default trigger filter.
-     * This method will immediately subscribe. Emissions from the object will always be accepted.
-     * @param object observable object
-     * @param key observer key to subscribe to
-     * @return started emission watcher
-     */
-    public static <K, V> EmissionWatcher start(@NotNull Observable object, @NotNull DuplexKey<K, V> key) {
-        return start(object, key, (_k, _v) -> true);
     }
 
 }

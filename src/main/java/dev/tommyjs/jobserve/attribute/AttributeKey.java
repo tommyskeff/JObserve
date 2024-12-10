@@ -1,27 +1,26 @@
 package dev.tommyjs.jobserve.attribute;
 
+import dev.tommyjs.jobserve.util.TypeRef;
 import org.jetbrains.annotations.NotNull;
 
-@SuppressWarnings({"unused", "unchecked"})
 public class AttributeKey<T> {
 
-    private final @NotNull Class<? extends T> clazz;
+    private final @NotNull TypeRef<? extends T> type;
 
-    protected AttributeKey(@NotNull Class<? extends T> clazz) {
-        this.clazz = clazz;
+    private AttributeKey(@NotNull TypeRef<? extends T> type) {
+        this.type = type;
     }
 
-    public @NotNull Class<?> getType() {
-        return clazz;
+    public @NotNull TypeRef<? extends T> getType() {
+        return type;
     }
 
-    @Deprecated(since = "0.3.4")
-    public @NotNull Class<?> getClazz() {
-        return clazz;
+    public static <T> @NotNull AttributeKey<T> register(@NotNull Class<? extends T> type) {
+        return new AttributeKey<>(new TypeRef<>(type));
     }
 
-    public static <T> @NotNull AttributeKey<T> register(@NotNull Class<?> clazz) {
-        return (AttributeKey<T>) new AttributeKey<>(clazz);
+    public static <T> @NotNull AttributeKey<T> register(@NotNull TypeRef<? extends T> type) {
+        return new AttributeKey<>(type);
     }
 
 }
