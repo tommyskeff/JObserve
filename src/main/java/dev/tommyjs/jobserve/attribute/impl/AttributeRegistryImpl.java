@@ -168,11 +168,12 @@ public class AttributeRegistryImpl implements AttributeRegistry, Observable {
 
     @Override
     public <T> T getAndUpdate(@NotNull AttributeKey<T> key, @NotNull Function<@Nullable T, @Nullable T> function) {
+        Object prev;
         T value;
 
         mutex.writeLock().lock();
         try {
-            Object prev = getData().get(key);
+            prev = getData().get(key);
             checkValueType(key, prev);
 
             value = function.apply((T) prev);
@@ -187,7 +188,7 @@ public class AttributeRegistryImpl implements AttributeRegistry, Observable {
 
         emit(AttributeRegistry.UPDATE_ATTRIBUTE_OBSERVER, new AttributeUpdate<>(key, value));
 
-        return value;
+        return (T) prev;
     }
 
     @Override
