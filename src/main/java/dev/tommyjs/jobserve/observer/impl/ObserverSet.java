@@ -1,6 +1,6 @@
 package dev.tommyjs.jobserve.observer.impl;
 
-import dev.tommyjs.jobserve.observer.ObserverSubscription;
+import dev.tommyjs.jobserve.observer.ObserverSub;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -11,29 +11,29 @@ import java.util.function.Consumer;
 
 public class ObserverSet {
 
-    private final Set<SubscriptionImpl> subscriptions;
+    private final Set<SubImpl> subscriptions;
     
     public ObserverSet() {
         this.subscriptions = Collections.newSetFromMap(new ConcurrentHashMap<>());
     }
     
-    public ObserverSubscription subscribe(@NotNull Consumer<Object> consumer) {
-        SubscriptionImpl subscription = new SubscriptionImpl(consumer);
+    public ObserverSub subscribe(@NotNull Consumer<Object> consumer) {
+        SubImpl subscription = new SubImpl(consumer);
         subscriptions.add(subscription);
         return subscription;
     }
     
     public void call(@Nullable Object object) {
-        for (SubscriptionImpl subscription : subscriptions) {
+        for (SubImpl subscription : subscriptions) {
             subscription.call(object);
         }
     }
 
-    private class SubscriptionImpl implements ObserverSubscription {
+    private class SubImpl implements ObserverSub {
 
         private final Consumer<Object> consumer;
 
-        public SubscriptionImpl(Consumer<Object> consumer) {
+        public SubImpl(Consumer<Object> consumer) {
             this.consumer = consumer;
         }
 

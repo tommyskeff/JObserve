@@ -4,7 +4,6 @@ import dev.tommyjs.jobserve.observer.key.ObserverKey;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
@@ -30,7 +29,7 @@ public interface Observable {
     @NotNull ObserverEmitter getEmitter();
 
     /**
-     * Subscribes to all emissions on a specified {@link ObserverKey}. Until {@link ObserverSubscription#cancel()}
+     * Subscribes to all emissions on a specified {@link ObserverKey}. Until {@link ObserverSub#cancel()}
      * is called, the specified {@link Consumer} will be called, with an argument of type {@link T},
      * every time there is an emission on this key.
      * <p>
@@ -46,7 +45,7 @@ public interface Observable {
      * @return cancellable subscription
      * @param <T> emission argument type
      */
-    default <T> @NotNull ObserverSubscription observe(@NotNull ObserverKey<T> key, @NotNull Consumer<T> consumer) {
+    default <T> @NotNull ObserverSub observe(@NotNull ObserverKey<T> key, @NotNull Consumer<T> consumer) {
         return getEmitter().observe(key, consumer);
     }
 

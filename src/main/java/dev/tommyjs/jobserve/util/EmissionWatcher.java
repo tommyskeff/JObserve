@@ -1,12 +1,11 @@
 package dev.tommyjs.jobserve.util;
 
 import dev.tommyjs.jobserve.observer.Observable;
-import dev.tommyjs.jobserve.observer.ObserverSubscription;
+import dev.tommyjs.jobserve.observer.ObserverSub;
 import dev.tommyjs.jobserve.observer.key.ObserverKey;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
 /**
@@ -18,18 +17,18 @@ import java.util.function.Predicate;
  */
 public final class EmissionWatcher {
 
-    private final @NotNull ObserverSubscription subscription;
+    private final @NotNull ObserverSub subscription;
     private final @NotNull AtomicBoolean trip;
     private final @NotNull AtomicBoolean finished = new AtomicBoolean();
 
-    private EmissionWatcher(@NotNull ObserverSubscription subscription, @NotNull AtomicBoolean trip) {
+    private EmissionWatcher(@NotNull ObserverSub subscription, @NotNull AtomicBoolean trip) {
         this.subscription = subscription;
         this.trip = trip;
     }
 
     /**
      * Terminates this watcher and returns whether there was an emission between starting the watcher
-     * and now. This method will cancel the {@link ObserverSubscription} associated with this watcher.
+     * and now. This method will cancel the {@link ObserverSub} associated with this watcher.
      * @return whether the watcher was triggered
      */
     public boolean finish() {
@@ -52,7 +51,7 @@ public final class EmissionWatcher {
      */
     public static <T> EmissionWatcher start(@NotNull Observable object, @NotNull ObserverKey<T> key, @NotNull Predicate<T> filter) {
         AtomicBoolean trip = new AtomicBoolean();
-        ObserverSubscription sub = object.observe(key, v -> {
+        ObserverSub sub = object.observe(key, v -> {
             if (filter.test(v)) trip.set(true);
         });
 

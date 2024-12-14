@@ -10,7 +10,7 @@ import java.util.function.Consumer;
 public interface ObserverEmitter {
 
     /**
-     * Subscribes to all emissions on a specified {@link ObserverKey}. Until {@link ObserverSubscription#cancel()}
+     * Subscribes to all emissions on a specified {@link ObserverKey}. Until {@link ObserverSub#cancel()}
      * is called, the specified {@link Consumer} will be called, with an argument of type {@link T},
      * every time there is an emission on this key.
      * <p>
@@ -26,7 +26,7 @@ public interface ObserverEmitter {
      * @return cancellable subscription
      * @param <T> emission argument type
      */
-    <T> @NotNull ObserverSubscription observe(@NotNull ObserverKey<T> key, @NotNull Consumer<T> consumer);
+    <T> @NotNull ObserverSub observe(@NotNull ObserverKey<T> key, @NotNull Consumer<T> consumer);
 
     /**
      * Emits an event on a specified {@link ObserverKey}. This will immediately call all current

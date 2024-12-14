@@ -1,7 +1,7 @@
 package dev.tommyjs.jobserve.observer.impl;
 
 import dev.tommyjs.jobserve.observer.ObserverEmitter;
-import dev.tommyjs.jobserve.observer.ObserverSubscription;
+import dev.tommyjs.jobserve.observer.ObserverSub;
 import dev.tommyjs.jobserve.observer.key.ObserverKey;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -20,7 +20,7 @@ public class ObserverEmitterImpl implements ObserverEmitter {
     }
 
     @Override
-    public <T> @NotNull ObserverSubscription observe(@NotNull ObserverKey<T> key, @NotNull Consumer<T> consumer) {
+    public <T> @NotNull ObserverSub observe(@NotNull ObserverKey<T> key, @NotNull Consumer<T> consumer) {
         return map.computeIfAbsent(key, _k -> new ObserverSet()).subscribe(o -> consumer.accept((T) o));
     }
 
