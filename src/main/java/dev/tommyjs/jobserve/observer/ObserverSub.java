@@ -5,7 +5,7 @@ import dev.tommyjs.jobserve.observer.key.ObserverKey;
 /**
  * Represents the result of subscribing to a {@link ObserverKey} on a {@link Observable} object.
  */
-public interface ObserverSubscription {
+public interface ObserverSub {
 
     /**
      * Cancels this subscription. It is guaranteed that following execution of this method, the
