@@ -252,7 +252,4 @@ public interface PropertyMap extends Observable {
         return new PropertyMapImpl(emitter);
     }
 
-    record PropertyUpdate(@NotNull String key, @Nullable Object prev, @Nullable Object curr) {
-    }
-
 }

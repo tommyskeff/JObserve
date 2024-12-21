@@ -5,6 +5,7 @@ import dev.tommyjs.jobserve.observer.ObserverEmitter;
 import dev.tommyjs.jobserve.property.PropertyEntry;
 import dev.tommyjs.jobserve.property.PropertyKey;
 import dev.tommyjs.jobserve.property.PropertyMap;
+import dev.tommyjs.jobserve.property.PropertyUpdate;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

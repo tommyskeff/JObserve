@@ -220,7 +220,7 @@ public class PropertyTest {
         PropertyHolder holder2 = new DummyPropertyHolder();
 
         holder1.setProperty(integerProperty, 100);
-        holder2.copyFrom(holder1);
+        holder2.copyPropertiesFrom(holder1);
 
         assert Objects.equals(holder2.getProperty(integerProperty), 100);
     }

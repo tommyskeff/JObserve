@@ -278,7 +278,7 @@ public interface PropertyHolder extends Observable {
      * Clones all properties from this holder into another target holder.
      * @param target target property holder
      */
-    default void copyInto(@NotNull PropertyHolder target) {
+    default void copyPropertiesInto(@NotNull PropertyHolder target) {
         getPropertyMap().copyInto(target.getPropertyMap());
     }
 
@@ -286,14 +286,14 @@ public interface PropertyHolder extends Observable {
      * Clones all properties from a target holder into this holder.
      * @param target target property holder
      */
-    default void copyFrom(@NotNull PropertyHolder target) {
+    default void copyPropertiesFrom(@NotNull PropertyHolder target) {
         target.getPropertyMap().copyInto(getPropertyMap());
     }
 
     /**
      * Clears all properties from this property map.
      */
-    default void clear() {
+    default void clearProperties() {
         getPropertyMap().clear();
     }
 
@@ -302,7 +302,7 @@ public interface PropertyHolder extends Observable {
      * @param consumer callback
      * @return observer subscription
      */
-    default @NotNull ObserverSub observe(@NotNull Consumer<PropertyMap.PropertyUpdate> consumer) {
+    default @NotNull ObserverSub observe(@NotNull Consumer<PropertyUpdate> consumer) {
         return observe(PropertyMap.UPDATE_PROPERTY_KEY, consumer);
     }
 
